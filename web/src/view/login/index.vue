@@ -67,13 +67,7 @@
                     class="flex-1 mr-5"
                   />
                   <div class="w-1/3 h-11 bg-[#c3d4f2] rounded">
-                    <img
-                      v-if="picPath"
-                      class="w-full h-full"
-                      :src="picPath"
-                      alt="请输入验证码"
-                      @click="loginVerify()"
-                    >
+                    <img v-if="picPath" class="w-full h-full" :src="picPath" alt="请输入验证码" @click="loginVerify()" >
                   </div>
                 </div>
               </el-form-item>
@@ -85,15 +79,14 @@
                   @click="submitForm"
                 >登 录</el-button>
               </el-form-item>
-              <el-form-item class="mb-6">
+              <!-- <el-form-item class="mb-6">
                 <el-button
                   class="shadow shadow-blue-600 h-11 w-full"
                   type="primary"
                   size="large"
                   @click="checkInit"
                 >前往初始化</el-button>
-
-              </el-form-item>
+              </el-form-item> -->
             </el-form>
           </div>
         </div>
@@ -104,137 +97,60 @@
         alt="banner"
       ></div>
     </div>
-
-    <BottomInfo class="left-0 right-0 absolute bottom-3 mx-auto  w-full z-20">
-      <div class="links items-center justify-center gap-2 hidden md:flex">
-        <a
-          href="http://doc.henrongyi.top/"
-          target="_blank"
-        >
-          <img
-            src="@/assets/docs.png"
-            class="w-8 h-8"
-            alt="文档"
-          >
-        </a>
-        <a
-          href="https://support.qq.com/product/371961"
-          target="_blank"
-        >
-          <img
-            src="@/assets/kefu.png"
-            class="w-8 h-8"
-            alt="客服"
-          >
-        </a>
-        <a
-          href="https://github.com/flipped-aurora/gin-vue-admin"
-          target="_blank"
-        >
-          <img
-            src="@/assets/github.png"
-            class="w-8 h-8"
-            alt="github"
-          >
-        </a>
-        <a
-          href="https://space.bilibili.com/322210472"
-          target="_blank"
-        >
-          <img
-            src="@/assets/video.png"
-            class="w-8 h-8"
-            alt="视频站"
-          >
-        </a>
-      </div>
-    </BottomInfo>
   </div>
 </template>
 
-<script setup>
+<script lang="ts" setup name='Login'>
 import { captcha } from '@/api/user'
 import { checkDB } from '@/api/initdb'
-import BottomInfo from '@/view/layout/bottomInfo/bottomInfo.vue'
 import { reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/pinia/modules/user'
 
-defineOptions({
-  name: 'Login',
-})
+interface LoginFrom{
+  username: String
+  password: String
+  captcha: String,
+  captchaId: String,
+  openCaptcha: Boolean
+}
 
 const router = useRouter()
-// 验证函数
-const checkUsername = (rule, value, callback) => {
-  if (value.length < 5) {
-    return callback(new Error('请输入正确的用户名'))
-  } else {
-    callback()
-  }
-}
-const checkPassword = (rule, value, callback) => {
-  if (value.length < 6) {
-    return callback(new Error('请输入正确的密码'))
-  } else {
-    callback()
-  }
-}
-
-// 获取验证码
-const loginVerify = async() => {
-  const ele = await captcha()
-  rules.captcha.push({
-    max: ele.data.captchaLength,
-    min: ele.data.captchaLength,
-    message: `请输入${ele.data.captchaLength}位验证码`,
-    trigger: 'blur',
-  })
-  picPath.value = ele.data.picPath
-  loginFormData.captchaId = ele.data.captchaId
-  loginFormData.openCaptcha = ele.data.openCaptcha
-}
-loginVerify()
-
-// 登录相关操作
 const loginForm = ref(null)
 const picPath = ref('')
-const loginFormData = reactive({
+const loginFormData = reactive<LoginFrom>({
   username: 'admin',
   password: '123456',
-  captcha: '',
+  captcha: 11111,
   captchaId: '',
   openCaptcha: false,
 })
+
 const rules = reactive({
-  username: [{ validator: checkUsername, trigger: 'blur' }],
-  password: [{ validator: checkPassword, trigger: 'blur' }],
-  captcha: [
-    {
-      message: '验证码格式不正确',
-      trigger: 'blur',
-    },
-  ],
+  username: [{ required: true,message:'请输入账号', trigger: 'blur' }],
+  password: [{ required: true,message:'请输入密码', trigger: 'blur' }],
+  captcha: [{required: true,message:'请输入验证码',trigger: 'blur'}]
 })
 
-const userStore = useUserStore()
-const login = async() => {
-  return await userStore.LoginIn(loginFormData)
+// 获取验证码
+const loginVerify = async() => {
+  const {data} = await captcha();
+  picPath.value = data.picPath
+  loginFormData.captchaId = data.captchaId
+  loginFormData.openCaptcha = data.openCaptcha
 }
+loginVerify()
+
+const userStore = useUserStore()
 const submitForm = () => {
   loginForm.value.validate(async(v) => {
     if (v) {
-      const flag = await login()
+      const flag = await userStore.LoginIn(loginFormData)
       if (!flag) {
         loginVerify()
       }
     } else {
-      ElMessage({
-        type: 'error',
-        message: '请正确填写登录信息',
-        showClose: true,
-      })
       loginVerify()
       return false
     }
