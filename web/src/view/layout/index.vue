@@ -108,12 +108,12 @@
                           </div>
                           <template #dropdown>
                             <el-dropdown-menu>
-                              <el-dropdown-item>
+                              <!-- <el-dropdown-item>
                                 <span class="font-bold">
                                   当前角色：{{ userStore.userInfo.authority.authorityName }}
                                 </span>
-                              </el-dropdown-item>
-                              <template v-if="userStore.userInfo.authorities">
+                              </el-dropdown-item> -->
+                              <!-- <template v-if="userStore.userInfo.authorities">
                                 <el-dropdown-item
                                   v-for="item in userStore.userInfo.authorities.filter(i=>i.authorityId!==userStore.userInfo.authorityId)"
                                   :key="item.authorityId"
@@ -123,8 +123,8 @@
                                     切换为：{{ item.authorityName }}
                                   </span>
                                 </el-dropdown-item>
-                              </template>
-                              <el-dropdown-item icon="avatar">
+                              </template> -->
+                              <!-- <el-dropdown-item icon="avatar">
                                 <div
                                   class="command-box"
                                   style="display: flex"
@@ -137,7 +137,7 @@
                                     <span class="button">K</span>
                                   </div>
                                 </div>
-                              </el-dropdown-item>
+                              </el-dropdown-item> -->
                               <el-dropdown-item
                                 icon="avatar"
                                 @click="toPerson"
@@ -179,7 +179,7 @@
             </transition>
           </div>
         </router-view>
-        <BottomInfo />
+        <!-- <BottomInfo /> -->
         <setting />
         <CommandMenu ref="command" />
       </el-main>

@@ -13,14 +13,9 @@ import GvaPositionServer from './vitePlugin/codeServer'
 import fullImportPlugin from './vitePlugin/fullImport/fullImport.js'
 import { svgBuilder } from './vitePlugin/svgIcon/svgIcon.js'
 // @see https://cn.vitejs.dev/config/
-export default ({
-  command,
-  mode
-}) => {
+export default ({ command, mode }) => {
   const NODE_ENV = mode || 'development'
-  const envFiles = [
-    `.env.${NODE_ENV}`
-  ]
+  const envFiles = [`.env.${NODE_ENV}`]
   for (const file of envFiles) {
     const envConfig = dotenv.parse(fs.readFileSync(file))
     for (const k in envConfig) {

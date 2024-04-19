@@ -1,10 +1,15 @@
 import config from './config'
 import { h } from 'vue'
+import { ElMessage } from 'element-plus'
 
 // 统一导入el-icon图标
 import * as ElIconModules from '@element-plus/icons-vue'
 import svgIcon from '@/components/svgIcon/svgIcon.vue'
-// 导入转换图标名称的函数
+
+export function successTips(type,msg) {
+  return ElMessage({message:msg||'操作完成',type:type||'success'})
+}
+
 
 const createIconComponent = (name) => ({
   name: 'SvgIcon',
