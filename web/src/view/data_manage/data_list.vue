@@ -3,7 +3,7 @@
         <div class="group_main">
             <el-form :inline="true">
                 <el-form-item>
-                    <el-button type="danger" :disabled="checkIdArry.length==0" @click="changeIpBtn(0,1)">批量删除</el-button>
+                    <el-button type="danger" :disabled="checkIdArry.length==0" @click="delFileBtn(0,1)">批量删除</el-button>
                     <el-button type="primary" @click="createDatabtn(0,1)">WS数据入库</el-button>
                     <el-input class="cus_input_18" style="margin: 0 10px;" v-model="dataParams.task_name" clearable placeholder="输入文件名称"/>
                     <el-button type="primary" icon="Search" @click="getDatalist(1)">查询</el-button>
@@ -34,7 +34,7 @@
                     <el-table-column label="操作" width="180">
                         <template #default="scope">
                             <el-button :disabled="checkIdArry.length > 0" type="primary" @click.stop="createDatabtn(scope.row,2)">补充</el-button>
-                            <el-button :disabled="checkIdArry.length > 0" type="danger" style="margin-left:10px;" @click.stop="changeIpBtn(scope.row, 2)">删除</el-button>
+                            <el-button :disabled="checkIdArry.length > 0" type="danger" style="margin-left:10px;" @click.stop="delFileBtn(scope.row, 2)">删除</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -90,6 +90,7 @@
     import { FormInstance, FormRules} from 'element-plus'
     import { getDataList,createDataPack,upload,deleteDataPack,deleteDataPackByIds } from '@/api/data_list'
     interface dataStruct {
+        ID:number,
         name: string
         file_url: string
         ptype:number
@@ -117,6 +118,7 @@
         task_name:""
     })
     const dataForm = reactive<dataStruct>({
+        ID:null,
         name:"",
         file_url:"",
         ptype:null
@@ -156,7 +158,7 @@
         dataParams.page = page;
         getDatalist();
     }
-    const changeIpBtn = (row?:any,type?:number) => {
+    const delFileBtn = (row?:any,type?:number) => {
         delParams.dialogType = type;
         delParams.del_id = row.ID;
         delParams.delVisible = true;
@@ -183,6 +185,7 @@
     const createDatabtn = async (row:any,type:number) => {
         dataForm.ptype=type;
         dataForm.name=row?.name||"";
+        dataForm.ID=row?.ID||null;
         dialogVisible.value = true;
         await nextTick();
         if (type == 1) {
@@ -195,6 +198,7 @@
         await formEl.validate(async(valid, fields) => {
             if (valid) {
                 isLoading.value=true;
+                dataForm.ptype==1? delete dataForm.ID:"";
                 const res:any = await createDataPack(dataForm);
                 isLoading.value=false;
                 if ((res.code ) !=0) return;
