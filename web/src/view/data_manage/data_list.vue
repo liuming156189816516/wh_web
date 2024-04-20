@@ -141,7 +141,7 @@
     const getDatalist = async (num?:number) => {
         dataParams.page=num?num:dataParams.page;
         loading.value=true;
-        const res = await getDataList({page:dataParams.page,pageSize:dataParams.limit,keyword:dataParams.task_name})
+        const res = await getDataList({page:dataParams.page,pageSize:dataParams.limit,name:dataParams.task_name})
         loading.value=false;
         const {data:{list,total}} = res
         dataList.value = list||[];
