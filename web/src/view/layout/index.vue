@@ -97,10 +97,10 @@
                           <div class="flex justify-center items-center h-full w-full">
                             <span class="cursor-pointer flex justify-center items-center">
                               <CustomPic />
-                              <span
-                                v-show="!isMobile"
-                                style="margin-left: 5px"
-                              >{{ userStore.userInfo.nickName }}</span>
+                              <span v-show="!isMobile" style="margin-left: 5px"> 
+                                <!-- {{ userStore.userInfo.nickName }} -->
+                                admin
+                              </span>
                               <el-icon>
                                 <arrow-down />
                               </el-icon>

@@ -51,8 +51,8 @@
                     <el-form-item label="文件名称" prop="name">
                         <el-input v-model="dataForm.name" clearable />
                     </el-form-item>
-                    <el-form-item label-width="0">
-                        <el-upload ref="uploadRef" :limit="1" :auto-upload="false" :on-change="handleChangeFile" accept=".txt">
+                    <el-form-item label-width="0" v-if="dialogVisible">
+                        <el-upload ref="uploadRef" :limit="1" :auto-upload="false" :on-change="handleChangeFile" accept=".txt" style="width: 100%;">
                             <template #trigger>
                                 <el-button plain>选择文件</el-button>
                             </template>
@@ -181,6 +181,7 @@
         await nextTick();
         if (type == 1) {
             dataRef.value?.resetFields()
+            dataForm.file_url="";
         }
     }
     const submitForm = async (formEl: FormInstance | undefined) => {
