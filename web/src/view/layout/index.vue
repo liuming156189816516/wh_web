@@ -77,10 +77,9 @@
                         v-show="!isMobile"
                         class="breadcrumb"
                       >
-                        <el-breadcrumb-item
-                          v-for="item in matched.slice(1,matched.length)"
-                          :key="item.path"
-                        >{{ fmtTitle(item.meta.title,route) }}</el-breadcrumb-item>
+                        <el-breadcrumb-item v-for="item in matched.slice(1,matched.length)" :key="item.path">
+                          {{ fmtTitle(item.meta.title,route) }}
+                        </el-breadcrumb-item>
                       </el-breadcrumb>
                     </el-col>
                     <el-col
@@ -98,8 +97,8 @@
                             <span class="cursor-pointer flex justify-center items-center">
                               <CustomPic />
                               <span v-show="!isMobile" style="margin-left: 5px"> 
-                                <!-- {{ userStore.userInfo.nickName }} -->
-                                admin
+                                {{ userStore.userInfo.nickName }}
+                                <!-- admin -->
                               </span>
                               <el-icon>
                                 <arrow-down />

@@ -14,7 +14,7 @@
                 <div>已选 {{ checkIdArry.length }} 项</div>
             </div>
             <div>
-                <el-table :data="dataList" ref="dataTable" border height="640" v-loading="loading" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
+                <el-table :data="dataList" ref="dataTable" border height="640" v-loading="loading" element-loading-background="rgba(122, 122, 122, .1)" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
                     <el-table-column type="selection" width="55" />
                     <el-table-column prop="name" label="数据名称" minWidth="140" />
                     <el-table-column prop="invalidNum" label="无效数据" minWidth="100" />
@@ -28,12 +28,13 @@
                             <el-tag :type="scope.row.up_status==1?'warning':'success'"> {{ taskOption[scope.row.upStatus] }}</el-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column label="创建时间" width="180" >
+                    <el-table-column label="创建时间" width="160" >
                         <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
                     </el-table-column>
-                    <el-table-column label="操作" width="100">
-                        <template  #default="scope">
-                            <el-button :disabled="checkIdArry.length > 0" type="danger" style="margin:0 10px;" @click.stop="changeIpBtn(scope.row, 2)">删除</el-button>
+                    <el-table-column label="操作" width="180">
+                        <template #default="scope">
+                            <el-button :disabled="checkIdArry.length > 0" type="primary" @click.stop="createDatabtn(scope.row,2)">补充</el-button>
+                            <el-button :disabled="checkIdArry.length > 0" type="danger" style="margin-left:10px;" @click.stop="changeIpBtn(scope.row, 2)">删除</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -49,7 +50,7 @@
             <div>
                 <el-form ref="dataRef" :model="dataForm" :rules="dataRules" label-width="auto">
                     <el-form-item label="文件名称" prop="name">
-                        <el-input v-model="dataForm.name" clearable />
+                        <el-input :disabled="dataForm.ptype==2" v-model="dataForm.name" clearable />
                     </el-form-item>
                     <el-form-item label-width="0" v-if="dialogVisible">
                         <el-upload ref="uploadRef" :limit="1" :auto-upload="false" :on-change="handleChangeFile" accept=".txt" style="width: 100%;">
@@ -91,6 +92,7 @@
     interface dataStruct {
         name: string
         file_url: string
+        ptype:number
     }
     let dataList = ref([])
     let dataTable = ref()
@@ -117,6 +119,7 @@
     const dataForm = reactive<dataStruct>({
         name:"",
         file_url:"",
+        ptype:null
     })
     const dataRules = reactive<FormRules<dataStruct>>({
         name: [
@@ -137,7 +140,9 @@
     }
     const getDatalist = async (num?:number) => {
         dataParams.page=num?num:dataParams.page;
+        loading.value=true;
         const res = await getDataList({page:dataParams.page,pageSize:dataParams.limit,keyword:dataParams.task_name})
+        loading.value=false;
         const {data:{list,total}} = res
         dataList.value = list||[];
         dataParams.total = total;
@@ -157,11 +162,10 @@
         delParams.delVisible = true;
     }
     const handleDelBtn = async() => {
-        let params = {IDs:checkIdArry.value,ID:delParams.del_id}
-        delParams.dialogType==1?delete params.ID:delete params.IDs;
-        let reqApi = delParams.dialogType==1?deleteDataPackByIds:deleteDataPack;
+        let params = {IDs:[]}
+        delParams.dialogType==1?params.IDs=checkIdArry.value:params.IDs=[delParams.del_id];
         delParams.delVisible = true;
-        const res:any = await reqApi(params);
+        const res:any = await deleteDataPackByIds(params);
         delParams.delVisible = false;
         if (res.code != 0) return;
         delParams.delVisible = false;
@@ -176,7 +180,9 @@
         if (res.code != 0) return;
         dataForm.file_url = res.data.file.url;
     };
-    const createDatabtn = async (row:number,type:number) => {
+    const createDatabtn = async (row:any,type:number) => {
+        dataForm.ptype=type;
+        dataForm.name=row?.name||"";
         dialogVisible.value = true;
         await nextTick();
         if (type == 1) {
