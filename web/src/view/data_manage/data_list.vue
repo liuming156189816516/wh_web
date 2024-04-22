@@ -51,11 +51,11 @@
                                     <p v-else>暂无数据...</p>
                                 </div>
                                 <template #reference>
-                                    <el-button :disabled="checkIdArry.length>0" type="primary" @click.stop="showLeaveNum(scope.row,1)">剩余数量</el-button>
+                                    <el-button :disabled="checkIdArry.length>0" type="primary" @click.stop="showLeaveNum(scope.row,1)" plain>剩余数量</el-button>
                                 </template>
                             </el-popover>
-                            <el-button :disabled="checkIdArry.length > 0" type="success" @click.stop="createDatabtn(scope.row,2)">补充</el-button>
-                            <el-button :disabled="checkIdArry.length > 0" type="danger" style="margin-left:10px;" @click.stop="delFileBtn(scope.row, 2)">删除</el-button>
+                            <el-button :disabled="checkIdArry.length > 0" type="success" @click.stop="createDatabtn(scope.row,2)" plain>补充</el-button>
+                            <el-button :disabled="checkIdArry.length > 0" type="danger" style="margin-left:10px;" @click.stop="delFileBtn(scope.row, 2)" plain>删除</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
