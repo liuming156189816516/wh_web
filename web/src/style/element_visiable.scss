@@ -260,3 +260,30 @@
         }
     }
 }
+
+ /* Webkit内核 */
+::-webkit-scrollbar {
+    width: 4px; /* 设置滚动条宽度 */
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: #dfe6ec; /* 设置滚动条背景色 */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #c7c8c9; /* 设置滚动条滑块颜色 */
+    border-radius: 5px; /* 设置滚动条滑块圆角 */
+}
+.scroll-container ::-webkit-scrollbar {
+    height: 0;
+}
+.loading_icon {
+    width: 100%;
+    color: #1989fa;
+    padding: 0;
+    line-height: 1;
+    border: none !important;
+    border-color: transparent !important;
+    background: transparent !important;
+}

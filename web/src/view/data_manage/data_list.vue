@@ -31,8 +31,29 @@
                     <el-table-column label="创建时间" width="160" >
                         <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
                     </el-table-column>
-                    <el-table-column label="操作" width="180">
+                    <el-table-column label="操作" width="260">
                         <template #default="scope">
+                            <el-popover placement="left" :width="200" trigger="click">
+                                <span>剩余数据明细</span>
+                                <div style="display: flex;justify-content: flex-end;">
+                                    合计 0 条
+                                </div>
+                                <div>
+                                    <template v-if="residueList.length>0">
+                                        <div class="residue_less" ref="lazyEle" @scroll="lazyScroll">
+                                            <el-button v-if="moreLoading" class="loading_icon" :loading="true"></el-button>
+                                            <template v-else>
+                                                <div v-for="(item,idx) in residueList" :key="idx">{{ item }}</div>
+                                                <div class="no_more" v-if="isMore">没有更多了</div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <p v-else>暂无数据...</p>
+                                </div>
+                                <template #reference>
+                                    <el-button :disabled="checkIdArry.length>0" type="warning" @click.stop="showLeaveNum(scope.row)">剩余数量</el-button>
+                                </template>
+                            </el-popover>
                             <el-button :disabled="checkIdArry.length > 0" type="primary" @click.stop="createDatabtn(scope.row,2)">补充</el-button>
                             <el-button :disabled="checkIdArry.length > 0" type="danger" style="margin-left:10px;" @click.stop="delFileBtn(scope.row, 2)">删除</el-button>
                         </template>
@@ -83,7 +104,7 @@
     </div>
 </template>
 
-<script setup lang='ts' name='data_list'>
+<script lang='ts' setup name='data_list'>
     import { reactive, ref, nextTick } from 'vue'
     import { successTips} from '@/core/global'
     import { formatDate } from '@/utils/format'
@@ -96,20 +117,42 @@
         ptype:number
     }
     let dataList = ref([])
+    let timer = ref(null)
+    let lazyEle = ref(null)
     let dataTable = ref()
-    const checkIdArry = ref([])
-    const taskOption = ref(["","上传中...","已完成"])
     let uploadRef = ref("")
+    let isMore = ref(false)
     let loading = ref(false)
     let isLoading = ref(false)
+    let moreLoading = ref(false)
     let dialogVisible = ref(false)
+    const residueList = ref([
+        "18295786951",
+        "18295786951",
+        "18295786951",
+        "18295786951",
+        "18295786951",
+        "18295786951",
+        "18295786951",
+        "18295786951",
+        "18295786951",
+        "18295786951",
+        "18295786951",
+    ])
+    const checkIdArry = ref([])
     const dataRef = ref<FormInstance>()
+    const taskOption = ref(["","上传中...","已完成"])
     const pageOption = ref([10, 20, 50, 100, 200, 500, 1000])
     const delParams = reactive({
         del_id:"",
         delVisible:false,
         delLoading:false,
         dialogType:null
+    })
+    const remaParams = reactive({
+        page:1,
+        limit:10,
+        total:0,
     })
     const dataParams = reactive({
         page:1,
@@ -150,6 +193,54 @@
         dataParams.total = total;
     }
     getDatalist();
+    const showLeaveNum = (row:any)=>{
+        lazyScroll();
+    }
+    const lazyScroll = ()=>{
+        isMore.value = false;
+        const container = lazyEle.value
+        if (container.scrollTop + container.clientHeight >= container.scrollHeight && residueList.value.length<60) {
+            clearTimeout(timer.value);
+            // moreLoading.value=true;
+            timer.value = setTimeout(() => {
+                console.log("8888");
+                for (let k = 0; k < 10; k++) {
+                    let item = `18295786952${k}`
+                    residueList.value.push(item)
+                }
+                moreLoading.value=false;
+                // remaParams.page +=1;
+                // getresiduenum({id:this.model2.id,page:this.model2.page,limit:this.model2.limit}).then(res=>{
+                //     moreLoading.value=false;
+                //     if (res.code !=0)return;
+                //     residueList.value = this.residueList.concat(res.data.list)
+                // })
+            }, 500);
+        }else{
+            timer.value = setTimeout(() => {
+                isMore.value = true;
+            }, 500);
+        }
+
+        // let scrollEle = lazyEle;
+        // let scrollbtn = scrollEle.scrollHeight - scrollEle.scrollTop-scrollEle.clientHeight;
+        // clearTimeout(this.timer);
+        // if (scrollbtn < 20 && this.residueList.length < this.model2.total) {
+        //     this.timer = setTimeout(() => {
+        //         this.isMore = false;
+        //         this.model2.page +=1;
+        //         getresiduenum({id:this.model2.id,page:this.model2.page,limit:this.model2.limit}).then(res=>{
+        //             this.moreLoading=false;
+        //             if (res.code !=0)return;
+        //             this.residueList = this.residueList.concat(res.data.list)
+        //         })
+        //     }, 500);
+        // }else{
+        //     this.timer = setTimeout(() => {
+        //         this.isMore = true;
+        //     }, 500);
+        // }
+    }
     const setPageSize = (size:number) => {
         dataParams.limit = size;
         getDatalist(1);
@@ -247,4 +338,18 @@
             opacity: 1;
         }
     }
+    .residue_less{
+        width: 100%;
+        max-height: 100px;
+        overflow: hidden;
+        overflow-y: auto;
+        .no_more{
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    }
+    .loading_icon{
+        margin-top: 10px;
+    }
+
 </style>
