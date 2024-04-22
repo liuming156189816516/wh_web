@@ -20,6 +20,6 @@ export const upload = (data) => {
   return service({url: '/fileUploadAndDownload/upload', method: 'post',data})
 }
 
-// export const deleteDataPackByIds = (data) => {
-//   return service({url: '/dp/deleteDataPackByIds', method: 'post',data})
-// }
+export const getResidueNum = (params) => {
+  return service({url: '/dp/getResidueNum', method: 'get',params})
+}

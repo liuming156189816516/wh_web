@@ -36,7 +36,7 @@
                             <el-popover placement="left" :width="200" trigger="click">
                                 <span>剩余数据明细</span>
                                 <div style="display: flex;justify-content: flex-end;">
-                                    合计 0 条
+                                    合计 {{remaParams.total}} 条
                                 </div>
                                 <div>
                                     <template v-if="residueList.length>0">
@@ -51,10 +51,10 @@
                                     <p v-else>暂无数据...</p>
                                 </div>
                                 <template #reference>
-                                    <el-button :disabled="checkIdArry.length>0" type="warning" @click.stop="showLeaveNum(scope.row)">剩余数量</el-button>
+                                    <el-button :disabled="checkIdArry.length>0" type="primary" @click.stop="showLeaveNum(scope.row,1)">剩余数量</el-button>
                                 </template>
                             </el-popover>
-                            <el-button :disabled="checkIdArry.length > 0" type="primary" @click.stop="createDatabtn(scope.row,2)">补充</el-button>
+                            <el-button :disabled="checkIdArry.length > 0" type="success" @click.stop="createDatabtn(scope.row,2)">补充</el-button>
                             <el-button :disabled="checkIdArry.length > 0" type="danger" style="margin-left:10px;" @click.stop="delFileBtn(scope.row, 2)">删除</el-button>
                         </template>
                     </el-table-column>
@@ -109,7 +109,7 @@
     import { successTips} from '@/core/global'
     import { formatDate } from '@/utils/format'
     import { FormInstance, FormRules} from 'element-plus'
-    import { getDataList,createDataPack,upload,deleteDataPack,deleteDataPackByIds } from '@/api/data_list'
+    import { getDataList,createDataPack,upload,deleteDataPack,deleteDataPackByIds,getResidueNum } from '@/api/data_list'
     interface dataStruct {
         ID:number,
         name: string
@@ -150,9 +150,10 @@
         dialogType:null
     })
     const remaParams = reactive({
-        page:1,
-        limit:10,
+        page:0,
+        limit:20,
         total:0,
+        id:"",
     })
     const dataParams = reactive({
         page:1,
@@ -193,53 +194,37 @@
         dataParams.total = total;
     }
     getDatalist();
-    const showLeaveNum = (row:any)=>{
-        lazyScroll();
+    const showLeaveNum = async (row:any,page:number)=>{
+        residueList.value=[];
+        remaParams.id=row.ID;
+        remaParams.page=page;
+        moreLoading.value=true;
+        let res:any = await getResidueNum({ID:row.ID,page:remaParams.page,pageSize:remaParams.limit})
+        moreLoading.value=false;
+        if (res.code !=0)return;
+        let { total,list } = res.data;
+        remaParams.total=total;
+        residueList.value = list||[];
     }
     const lazyScroll = ()=>{
-        isMore.value = false;
         const container = lazyEle.value
-        if (container.scrollTop + container.clientHeight >= container.scrollHeight && residueList.value.length<60) {
-            clearTimeout(timer.value);
-            // moreLoading.value=true;
+        let pageLen = Math.ceil(remaParams.total / remaParams.limit);
+        clearTimeout(timer.value);
+        if (container.scrollTop + container.clientHeight >= container.scrollHeight && pageLen > remaParams.page) {
+            isMore.value = false;
             timer.value = setTimeout(() => {
-                console.log("8888");
-                for (let k = 0; k < 10; k++) {
-                    let item = `18295786952${k}`
-                    residueList.value.push(item)
-                }
-                moreLoading.value=false;
-                // remaParams.page +=1;
-                // getresiduenum({id:this.model2.id,page:this.model2.page,limit:this.model2.limit}).then(res=>{
-                //     moreLoading.value=false;
-                //     if (res.code !=0)return;
-                //     residueList.value = this.residueList.concat(res.data.list)
-                // })
+                remaParams.page++
+                getResidueNum({ID:remaParams.id,page:remaParams.page,pageSize:remaParams.limit}).then((res:any)=>{
+                    if (res.code !=0)return;
+                    residueList.value = [...residueList.value,...res.data.list]
+                })
             }, 500);
         }else{
             timer.value = setTimeout(() => {
                 isMore.value = true;
             }, 500);
+            return;
         }
-
-        // let scrollEle = lazyEle;
-        // let scrollbtn = scrollEle.scrollHeight - scrollEle.scrollTop-scrollEle.clientHeight;
-        // clearTimeout(this.timer);
-        // if (scrollbtn < 20 && this.residueList.length < this.model2.total) {
-        //     this.timer = setTimeout(() => {
-        //         this.isMore = false;
-        //         this.model2.page +=1;
-        //         getresiduenum({id:this.model2.id,page:this.model2.page,limit:this.model2.limit}).then(res=>{
-        //             this.moreLoading=false;
-        //             if (res.code !=0)return;
-        //             this.residueList = this.residueList.concat(res.data.list)
-        //         })
-        //     }, 500);
-        // }else{
-        //     this.timer = setTimeout(() => {
-        //         this.isMore = true;
-        //     }, 500);
-        // }
     }
     const setPageSize = (size:number) => {
         dataParams.limit = size;
