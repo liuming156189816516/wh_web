@@ -222,6 +222,7 @@
         dataList.value = list||[];
         dataParams.total = total;
     }
+    console.log(import.meta.env);
     getDatalist();
     const showLeaveNum = async (row:any,page:number)=>{
         residueList.value=[];
@@ -316,7 +317,6 @@
                     if ((res.code ) !=0) return;
                 }else{
                     const { VITE_BASE_PATH,VITE_SERVER_PORT,VITE_BASE_API} = import.meta.env;
-                    const baseUrl = import.meta.env.VITE_BASE_API
                     const url = `${VITE_BASE_API}/dp/download?ID=${dataForm.ID}&Num=${dataForm.export_num}`
                     window.location.href = url;
                 }

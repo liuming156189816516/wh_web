@@ -6,7 +6,7 @@
   >导出</el-button>
 </template>
 
-<script lang="ts" setup>
+<script setup>
 const props = defineProps({
   templateId: {
     type: String,
