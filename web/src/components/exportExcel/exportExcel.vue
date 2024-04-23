@@ -6,7 +6,7 @@
   >导出</el-button>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 const props = defineProps({
   templateId: {
     type: String,
@@ -48,11 +48,10 @@ const exportExcelFunc = async() => {
   if (props.order) {
     paramsCopy.order = props.order
   }
-  const params = Object.entries(paramsCopy)
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-    .join('&')
+  const params = Object.entries(paramsCopy).map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&')
   const url = `${baseUrl}/sysExportTemplate/exportExcel?templateID=${props.templateId}${params ? '&' + params : ''}`
-
-  window.open(url, '_blank')
+  console.log(url);
+  window.location.href = url;
+  // window.open(url, '_blank')
 }
 </script>

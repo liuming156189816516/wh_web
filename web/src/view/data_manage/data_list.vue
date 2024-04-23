@@ -51,11 +51,25 @@
                                     <p v-else>暂无数据...</p>
                                 </div>
                                 <template #reference>
-                                    <el-button :disabled="checkIdArry.length>0" type="primary" @click.stop="showLeaveNum(scope.row,1)" plain>剩余数量</el-button>
+                                    <el-button :disabled="checkIdArry.length>0" type="primary" @click.stop="showLeaveNum(scope.row,1)" size="small" plain>剩余数量</el-button>
                                 </template>
                             </el-popover>
-                            <el-button :disabled="checkIdArry.length > 0" type="success" @click.stop="createDatabtn(scope.row,2)" plain>补充</el-button>
-                            <el-button :disabled="checkIdArry.length > 0" type="danger" style="margin-left:10px;" @click.stop="delFileBtn(scope.row, 2)" plain>删除</el-button>
+                            <el-button :disabled="checkIdArry.length > 0" type="success" @click.stop="createDatabtn(scope.row,2)" size="small" plain>补充</el-button>
+                            <!-- <el-button :disabled="checkIdArry.length > 0" type="danger" style="margin-left:10px;" @click.stop="delFileBtn(scope.row, 2)" plain>删除</el-button> -->
+                            <el-button :disabled="checkIdArry.length>0" size="small" :border="false" style="padding: 0;" @click.stop>
+                                <el-dropdown @command="(command)=>{handleCommand(scope.row,command)}">
+                                    <el-button type="primary" size="small" plain>
+                                        更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
+                                    </el-button>
+                                    <template #dropdown>
+                                        <el-dropdown-menu>
+                                            <el-dropdown-item v-for="(item,idx) in moreOption" :key="idx" :command="{label:item,idx:idx}">
+                                            {{ item }}
+                                            </el-dropdown-item>
+                                        </el-dropdown-menu>
+                                    </template>
+                                </el-dropdown>
+                            </el-button>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -67,23 +81,31 @@
                 </div>
             </div>
         </div>
-        <el-dialog v-model="dialogVisible" title="上传数据" width="400" :close-on-click-modal="false">
+        <el-dialog v-model="dialogVisible" :title="dialogTitle" width="400" :close-on-click-modal="false">
             <div>
                 <el-form ref="dataRef" :model="dataForm" :rules="dataRules" label-width="auto">
-                    <el-form-item label="文件名称" prop="name">
-                        <el-input :disabled="dataForm.ptype==2" v-model="dataForm.name" clearable />
-                    </el-form-item>
-                    <el-form-item label-width="0" v-if="dialogVisible">
-                        <el-upload ref="uploadRef" :limit="1" :auto-upload="false" :on-change="handleChangeFile" accept=".txt" style="width: 100%;">
-                            <template #trigger>
-                                <el-button plain>选择文件</el-button>
-                            </template>
-                        </el-upload>
-                    </el-form-item>
+                    <template v-if="dataForm.ptype">
+                        <el-form-item label="文件名称" prop="name">
+                            <el-input :disabled="dataForm.ptype==2" v-model="dataForm.name" clearable />
+                        </el-form-item>
+                        <el-form-item label-width="0" v-if="dialogVisible">
+                            <el-upload ref="uploadRef" :limit="1" :auto-upload="false" :on-change="handleChangeFile" accept=".txt" style="width: 100%;">
+                                <template #trigger>
+                                    <el-button plain>选择文件</el-button>
+                                </template>
+                            </el-upload>
+                        </el-form-item>
+                    </template>
+                    <template v-else>
+                        <el-form-item label="导出数量" prop="export_num">
+                            <el-input :disabled="dataForm.ptype==2" v-model="dataForm.export_num" clearable />
+                        </el-form-item>
+                    </template>
                     <el-form-item>
                         <div class="el-r-but">
                             <el-button @click="dialogVisible = false">取消</el-button>
-                            <el-button type="primary" :disabled="!dataForm.file_url":loading="isLoading" @click="submitForm(dataRef)">确定</el-button>
+                            <el-button v-if="dataForm.ptype" type="primary" :disabled="!dataForm.file_url" :loading="isLoading" @click="submitForm(dataRef)">确定</el-button>
+                            <el-button v-else type="primary" :loading="isLoading" @click="submitForm(dataRef)">确定</el-button>
                         </div>
                     </el-form-item>
                 </el-form>
@@ -109,18 +131,20 @@
     import { successTips} from '@/core/global'
     import { formatDate } from '@/utils/format'
     import { FormInstance, FormRules} from 'element-plus'
-    import { getDataList,createDataPack,upload,deleteDataPack,deleteDataPackByIds,getResidueNum } from '@/api/data_list'
+    import { getDataList,createDataPack,upload,deleteDataPackByIds,getResidueNum,download } from '@/api/data_list'
     interface dataStruct {
         ID:number,
         name: string
         file_url: string
         ptype:number
+        export_num:number
     }
     let dataList = ref([])
     let timer = ref(null)
     let lazyEle = ref(null)
     let dataTable = ref()
     let uploadRef = ref("")
+    let dialogTitle = ref("上传数据")
     let isMore = ref(false)
     let loading = ref(false)
     let isLoading = ref(false)
@@ -143,6 +167,7 @@
     const dataRef = ref<FormInstance>()
     const taskOption = ref(["","上传中...","已完成"])
     const pageOption = ref([10, 20, 50, 100, 200, 500, 1000])
+    const moreOption = ref(["导出全部数据","导出剩余数据","导出异常数据"])
     const delParams = reactive({
         del_id:"",
         delVisible:false,
@@ -165,11 +190,15 @@
         ID:null,
         name:"",
         file_url:"",
-        ptype:null
+        ptype:null,
+        export_num:null
     })
     const dataRules = reactive<FormRules<dataStruct>>({
         name: [
             { required: true, message: '请输入文件名称', trigger: 'blur' }
+        ],
+        export_num: [
+            { required: true, message: '请输入导出数量', trigger: 'blur' }
         ]
     })
     const handleSelectionChange = (row:any) => {
@@ -262,6 +291,7 @@
         dataForm.ptype=type;
         dataForm.name=row?.name||"";
         dataForm.ID=row?.ID||null;
+        dialogTitle.value="上传数据";
         dialogVisible.value = true;
         await nextTick();
         if (type == 1) {
@@ -269,15 +299,27 @@
             dataForm.file_url="";
         }
     }
+    const handleCommand = (row:any,command:any) => {
+        dataForm.ID=row?.ID||null;
+        dialogTitle.value=command.label;
+        dialogVisible.value = true;
+    }
     const submitForm = async (formEl: FormInstance | undefined) => {
         if (!formEl) return;
         await formEl.validate(async(valid, fields) => {
             if (valid) {
                 isLoading.value=true;
-                dataForm.ptype==1? delete dataForm.ID:"";
-                const res:any = await createDataPack(dataForm);
-                isLoading.value=false;
-                if ((res.code ) !=0) return;
+                if (dataForm.ptype) {
+                    dataForm.ptype==1? delete dataForm.ID:"";
+                    const res:any = await createDataPack(dataForm);
+                    isLoading.value=false;
+                    if ((res.code ) !=0) return;
+                }else{
+                    const { VITE_BASE_PATH,VITE_SERVER_PORT,VITE_BASE_API} = import.meta.env;
+                    const baseUrl = import.meta.env.VITE_BASE_API
+                    const url = `${VITE_BASE_API}/dp/download?ID=${dataForm.ID}&Num=${dataForm.export_num}`
+                    window.location.href = url;
+                }
                 getDatalist(1)
                 successTips();
                 dialogVisible.value = false;

@@ -23,3 +23,7 @@ export const upload = (data) => {
 export const getResidueNum = (params) => {
   return service({url: '/dp/getResidueNum', method: 'get',params})
 }
+export const download = (params) => {
+  return service({url: '/dp/download', method: 'get',params})
+}
+
