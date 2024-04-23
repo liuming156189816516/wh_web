@@ -5,7 +5,7 @@ import router from '@/router/index'
 import { ElLoading } from 'element-plus'
 
 const service = axios.create({
-  baseURL: import.meta.env.VITE_BASE_API,
+  baseURL: import.meta.env.VITE_BASE_PATH,
   timeout: 99999
 })
 let activeAxios = 0
