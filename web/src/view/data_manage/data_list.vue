@@ -14,7 +14,7 @@
                 <div>已选 {{ checkIdArry.length }} 项</div>
             </div>
             <div>
-                <el-table :data="dataList" :summary-method="getSummaries" show-summary ref="dataTable" border :cell-style="custom_text" :height="tableHeight" v-loading="loading" element-loading-background="rgba(122, 122, 122, .1)" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
+                <el-table :data="dataList" :summary-method="getSummaries" show-summary ref="dataTable" border :height="tableHeight" v-loading="loading" element-loading-background="rgba(122, 122, 122, .1)" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
                     <el-table-column type="selection" width="55" />
                     <el-table-column prop="name" label="数据名称" minWidth="140" />
                     <el-table-column prop="invalidNum" label="无效数据" minWidth="100" />
@@ -33,7 +33,7 @@
                             <el-tag :type="scope.row.up_status==1?'warning':'success'"> {{ taskOption[scope.row.upStatus] }}</el-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="useStatus" label="评价" minWidth="130">
+                    <el-table-column prop="useStatus" label="评价" minWidth="140">
                         <template #default="scope">
                             <el-rate @click.stop v-model="scope.row.evaluate" size="large" :max="5" @change="setGarde($event,scope.row)" />
                         </template>
@@ -289,10 +289,6 @@
             }
         });
         return sums;
-    }
-    const custom_text = ({row, column, rowIndex, columnIndex }) => {
-        console.log(rowIndex);
-        console.log(columnIndex);
     }
     const showLeaveNum = async (row:any,page:number)=>{
         residueList.value=[];
