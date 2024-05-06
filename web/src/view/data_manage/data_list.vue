@@ -23,7 +23,7 @@
                     <el-table-column prop="repeatNum" label="账号内重复" minWidth="100" />
                     <el-table-column prop="intoNum" label="入库数量" minWidth="100" />
                     <el-table-column prop="residueNum" label="剩余数量" minWidth="100" />
-                    <el-table-column prop="useStatus" label="剩余数量" minWidth="100">
+                    <el-table-column prop="useStatus" label="数据状态" minWidth="100">
                         <template #default="scope">
                             <el-tag :type="scope.row.useStatus==1?'success':'warning'"> {{ dataOption[scope.row.useStatus] }}</el-tag>
                         </template>
