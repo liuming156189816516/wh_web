@@ -23,14 +23,19 @@
                     <el-table-column prop="repeatNum" label="账号内重复" minWidth="100" />
                     <el-table-column prop="intoNum" label="入库数量" minWidth="100" />
                     <el-table-column prop="residueNum" label="剩余数量" minWidth="100" />
-                    <!-- <el-table-column prop="upStatus" label="数据等级" minWidth="100">
+                    <el-table-column prop="useStatus" label="剩余数量" minWidth="100">
                         <template #default="scope">
-                            <el-rate v-model="scope.row.upNum" disabled show-score text-color="#ff9900" score-template="3" />
+                            <el-tag :type="scope.row.useStatus==1?'success':'warning'"> {{ dataOption[scope.row.useStatus] }}</el-tag>
                         </template>
-                    </el-table-column> -->
+                    </el-table-column>
                     <el-table-column prop="upStatus" label="任务状态" minWidth="100">
                         <template  #default="scope">
                             <el-tag :type="scope.row.up_status==1?'warning':'success'"> {{ taskOption[scope.row.upStatus] }}</el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="useStatus" label="评价" minWidth="130">
+                        <template #default="scope">
+                            <el-rate v-model="scope.row.evaluate" size="large" text-color="#ff9900" :max="scope.row.evaluate" disabled />
                         </template>
                     </el-table-column>
                     <el-table-column label="创建时间" width="160" >
@@ -123,7 +128,7 @@
         <el-dialog v-model="delParams.delVisible" title="提示" top="40vh" width="420" :close-on-click-modal="false">
             <div style="display:flex;align-items: center;"> 
                 <el-icon size="21" color="#e6a23c"><WarningFilled /></el-icon>
-                <span style="display:flex;margin-left: 5px;">确认要删除吗？</span>
+                <span style="display:flex;margin-left: 5px;">{{ tipsContent }}</span>
             </div>
             <template #footer>
                 <div class="dialog-footer">
@@ -133,12 +138,17 @@
             </template>
         </el-dialog>
 
-        <el-dialog v-model="downParams.showVisible" title="下载记录" width="660" :close-on-click-modal="false">
+        <el-dialog v-model="downParams.showVisible" title="下载记录" width="760" :close-on-click-modal="false">
             <el-table :data="recordList" ref="dataTable" border height="600" v-loading="loading" element-loading-background="rgba(122, 122, 122, .1)" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
                 <el-table-column prop="num" label="数量" minWidth="100" />
                 <el-table-column prop="remark" label="备注" minWidth="100" />
                 <el-table-column label="创建时间" width="160" >
                     <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
+                </el-table-column>
+                <el-table-column label="操作" width="130">
+                    <template #default="scope">
+                        <el-button type="primary" @click.stop="exportRecord(scope.row)" size="small" plain>导出下载记录</el-button>
+                    </template>
                 </el-table-column>
             </el-table>
             <div class="layui_page">
@@ -156,7 +166,7 @@
     import { successTips} from '@/core/global'
     import { formatDate } from '@/utils/format'
     import { FormInstance, FormRules} from 'element-plus'
-    import { getDataList,createDataPack,upload,deleteDataPackByIds,getResidueNum,downloadList,doOutPutData } from '@/api/data_list'
+    import { getDataList,createDataPack,upload,deleteDataPackByIds,getResidueNum,downloadList,setDataPackUseStatus } from '@/api/data_list'
     interface dataStruct {
         ID:number,
         name: string
@@ -179,13 +189,15 @@
     let moreLoading = ref(false)
     let dialogVisible = ref(false)
     let recoedLoading = ref(false)
+    let tipsContent = ref("")
     const residueList = ref([])
     const checkIdArry = ref([])
     const dataRef = ref<FormInstance>()
     const { VITE_BASE_API} = import.meta.env;
     const taskOption = ref(["","上传中...","已完成"])
+    const dataOption = ref(["","未使用","已使用"])
     const pageOption = ref([10, 20, 50, 100, 200, 500, 1000])
-    const moreOption = ref(["导出全部数据","导出剩余数据","下载数据"])
+    const moreOption = ref(["导出全部数据","导出剩余数据","下载数据","设置为已使用"])
     const delParams = reactive({
         del_id:"",
         delVisible:false,
@@ -294,6 +306,7 @@
     const delFileBtn = (row?:any,type?:number) => {
         delParams.dialogType = type;
         delParams.del_id = row.ID;
+        tipsContent.value="确定要删除吗？"
         delParams.delVisible = true;
     }
     const downloadRecord = async (row:any)=>{
@@ -323,10 +336,15 @@
         getRecordList();
     }
     const handleDelBtn = async() => {
-        let params = {IDs:[]}
-        delParams.dialogType==1?params.IDs=checkIdArry.value:params.IDs=[delParams.del_id];
+        let params = {}
+        if (delParams.dialogType) {
+            delParams.dialogType==1?Reflect.set(params,"IDs",checkIdArry.value):Reflect.set(params,"IDs",[delParams.del_id]); 
+        }else{
+            Reflect.set(params,"pack_id",dataForm.ID)
+        }
         delParams.delVisible = true;
-        const res:any = await deleteDataPackByIds(params);
+        const reqApi = delParams.dialogType?deleteDataPackByIds:setDataPackUseStatus;
+        const res:any = await reqApi(params);
         delParams.delVisible = false;
         if (res.code != 0) return;
         delParams.delVisible = false;
@@ -362,6 +380,12 @@
             dataForm.ID=row?.ID||null;
             dialogTitle.value=command.label;
             dialogVisible.value = true;
+        }else if(command.idx==3){
+            delParams.dialogType=null;
+            dataForm.ID=row?.ID||null;
+            delParams.delVisible=true;
+            dialogTitle.value=command.label;
+            tipsContent.value="确定将该数据设为已使用？";
         }else{
             dataForm.comIdx=command.idx+1;
             const url = `${VITE_BASE_API}/dp/doOutPutData?pack_id=${row.ID}&ptype=${dataForm.comIdx}`
@@ -390,6 +414,10 @@
             console.log('error submit!', fields)
             }
         })
+    }
+    const exportRecord = async (row:any) => {
+        const url = `${VITE_BASE_API}/dp/doOutDownloadRecord?download_id=${row.ID}`
+        window.location.href = url;
     }
 
 </script>

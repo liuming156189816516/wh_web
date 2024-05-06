@@ -31,5 +31,12 @@ export const doOutPutData = (params) => {
 export const downloadList = (params) => {
   return service({url: '/dp/downloadList', method: 'get',params})
 }
+export const doOutDownloadRecord = (params) => {
+  return service({url: '/dp/doOutDownloadRecord', method: 'get',params})
+}
+export const setDataPackUseStatus = (data) => {
+  return service({url: '/dp/setDataPackUseStatus', method: 'put',data})
+}
+
 
 
