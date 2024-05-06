@@ -240,7 +240,7 @@
         ]
     })
     const tableHeight = computed<number>(() => {
-        return document.documentElement.clientHeight-260
+        return document.documentElement.clientHeight-240
     })
     const handleSelectionChange = (row:any) => {
         checkIdArry.value = row.map(item => item.ID);
