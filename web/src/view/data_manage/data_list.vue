@@ -14,7 +14,7 @@
                 <div>已选 {{ checkIdArry.length }} 项</div>
             </div>
             <div>
-                <el-table :data="dataList" ref="dataTable" border height="640" v-loading="loading" element-loading-background="rgba(122, 122, 122, .1)" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
+                <el-table :data="dataList" :summary-method="getSummaries" show-summary ref="dataTable" border height="680" v-loading="loading" element-loading-background="rgba(122, 122, 122, .1)" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
                     <el-table-column type="selection" width="55" />
                     <el-table-column prop="name" label="数据名称" minWidth="140" />
                     <el-table-column prop="invalidNum" label="无效数据" minWidth="100" />
@@ -84,12 +84,9 @@
                         </template>
                     </el-table-column>
                 </el-table>
-                <div class="layui_page">
                     <el-pagination background @size-change="setPageSize" @current-change="switchPage"
-                        :page-sizes="pageOption" :current-page.sync="dataParams.page" :page-size="dataParams.limit"
-                        layout="total, sizes, prev, pager, next, jumper" :total="dataParams.total">
-                    </el-pagination>
-                </div>
+                    :page-sizes="pageOption" :current-page.sync="dataParams.page" :page-size="dataParams.limit"
+                    layout="total, sizes, prev, pager, next, jumper" :total="dataParams.total" style="padding-top: 0;margin-top: 10px;" />
             </div>
         </div>
         <el-dialog v-model="dialogVisible" :title="dialogTitle" width="400" :close-on-click-modal="false">
@@ -192,6 +189,7 @@
     let tipsContent = ref("")
     const residueList = ref([])
     const checkIdArry = ref([])
+    const sunmmary = ref([6,7])
     const dataRef = ref<FormInstance>()
     const { VITE_BASE_API} = import.meta.env;
     const taskOption = ref(["","上传中...","已完成"])
@@ -263,6 +261,29 @@
         dataParams.total = total;
     }
     getDatalist();
+    const getSummaries = (param?:any) => {
+        const { columns, data } = param;
+        const sums = [];
+        columns.forEach((column, index) => {
+            const values = data.map(item => Number(item[column.property]));
+            if (index === 0) {
+                sums[index] = "汇总";
+                return;
+            }else if(sunmmary.value.indexOf(index) > -1){
+                sums[index] = values.reduce((prev, curr) => {
+                    const value = Number(curr);
+                    if (!isNaN(value)) {
+                        return prev+curr;
+                    } else {
+                        return prev;
+                    }
+                },0);
+            }else{
+                sums[index] = '--';	
+            }
+        });
+        return sums;
+    }
     const showLeaveNum = async (row:any,page:number)=>{
         residueList.value=[];
         remaParams.id=row.ID;
