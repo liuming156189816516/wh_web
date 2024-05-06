@@ -23,6 +23,11 @@
                     <el-table-column prop="repeatNum" label="账号内重复" minWidth="100" />
                     <el-table-column prop="intoNum" label="入库数量" minWidth="100" />
                     <el-table-column prop="residueNum" label="剩余数量" minWidth="100" />
+                    <!-- <el-table-column prop="upStatus" label="数据等级" minWidth="100">
+                        <template #default="scope">
+                            <el-rate v-model="scope.row.upNum" disabled show-score text-color="#ff9900" score-template="3" />
+                        </template>
+                    </el-table-column> -->
                     <el-table-column prop="upStatus" label="任务状态" minWidth="100">
                         <template  #default="scope">
                             <el-tag :type="scope.row.up_status==1?'warning':'success'"> {{ taskOption[scope.row.upStatus] }}</el-tag>
@@ -31,7 +36,7 @@
                     <el-table-column label="创建时间" width="160" >
                         <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
                     </el-table-column>
-                    <el-table-column label="操作" width="260">
+                    <el-table-column label="操作" width="320">
                         <template #default="scope">
                             <el-popover placement="left" :width="200" trigger="click">
                                 <span>剩余数据明细</span>
@@ -55,15 +60,16 @@
                                 </template>
                             </el-popover>
                             <el-button :disabled="checkIdArry.length > 0" type="success" @click.stop="createDatabtn(scope.row,2)" size="small" plain>补充</el-button>
+                            <el-button :disabled="checkIdArry.length>0" type="primary" @click.stop="downloadRecord(scope.row)" size="small" plain>下载记录</el-button>
                             <!-- <el-button :disabled="checkIdArry.length > 0" type="danger" style="margin-left:10px;" @click.stop="delFileBtn(scope.row, 2)" plain>删除</el-button> -->
                             <el-button :disabled="checkIdArry.length>0" size="small" :border="false" style="padding: 0;" @click.stop>
                                 <el-dropdown @command="(command)=>{handleCommand(scope.row,command)}">
-                                    <el-button type="primary" size="small" plain>
+                                    <el-button type="primary" size="small">
                                         更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
                                     </el-button>
                                     <template #dropdown>
                                         <el-dropdown-menu>
-                                            <el-dropdown-item v-for="(item,idx) in moreOption" :key="idx" :command="{label:item,idx:idx}">
+                                            <el-dropdown-item :disabled="checkIdArry.length>0" v-for="(item,idx) in moreOption" :key="idx" :command="{label:item,idx:idx}">
                                             {{ item }}
                                             </el-dropdown-item>
                                         </el-dropdown-menu>
@@ -98,7 +104,10 @@
                     </template>
                     <template v-else>
                         <el-form-item label="导出数量" prop="export_num">
-                            <el-input :disabled="dataForm.ptype==2" v-model="dataForm.export_num" clearable />
+                            <el-input v-model="dataForm.export_num" clearable />
+                        </el-form-item>
+                        <el-form-item label="备注">
+                            <el-input v-model="dataForm.remark" clearable />
                         </el-form-item>
                     </template>
                     <el-form-item>
@@ -123,6 +132,22 @@
                 </div>
             </template>
         </el-dialog>
+
+        <el-dialog v-model="downParams.showVisible" title="下载记录" width="660" :close-on-click-modal="false">
+            <el-table :data="recordList" ref="dataTable" border height="600" v-loading="loading" element-loading-background="rgba(122, 122, 122, .1)" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
+                <el-table-column prop="num" label="数量" minWidth="100" />
+                <el-table-column prop="remark" label="备注" minWidth="100" />
+                <el-table-column label="创建时间" width="160" >
+                    <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
+                </el-table-column>
+            </el-table>
+            <div class="layui_page">
+                <el-pagination background @size-change="recordPageSize" @current-change="recordLimitSize"
+                    :page-sizes="pageOption" :current-page.sync="downParams.page" :page-size="downParams.limit"
+                    layout="total, sizes, prev, pager, next, jumper" :total="downParams.total">
+                </el-pagination>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
@@ -131,15 +156,18 @@
     import { successTips} from '@/core/global'
     import { formatDate } from '@/utils/format'
     import { FormInstance, FormRules} from 'element-plus'
-    import { getDataList,createDataPack,upload,deleteDataPackByIds,getResidueNum,download } from '@/api/data_list'
+    import { getDataList,createDataPack,upload,deleteDataPackByIds,getResidueNum,downloadList,doOutPutData } from '@/api/data_list'
     interface dataStruct {
         ID:number,
         name: string
         file_url: string
         ptype:number
+        comIdx: number
+        remark: string
         export_num:number
     }
     let dataList = ref([])
+    let recordList = ref([])
     let timer = ref(null)
     let lazyEle = ref(null)
     let dataTable = ref()
@@ -150,24 +178,14 @@
     let isLoading = ref(false)
     let moreLoading = ref(false)
     let dialogVisible = ref(false)
-    const residueList = ref([
-        "18295786951",
-        "18295786951",
-        "18295786951",
-        "18295786951",
-        "18295786951",
-        "18295786951",
-        "18295786951",
-        "18295786951",
-        "18295786951",
-        "18295786951",
-        "18295786951",
-    ])
+    let recoedLoading = ref(false)
+    const residueList = ref([])
     const checkIdArry = ref([])
     const dataRef = ref<FormInstance>()
+    const { VITE_BASE_API} = import.meta.env;
     const taskOption = ref(["","上传中...","已完成"])
     const pageOption = ref([10, 20, 50, 100, 200, 500, 1000])
-    const moreOption = ref(["导出全部数据","导出剩余数据","导出异常数据"])
+    const moreOption = ref(["导出全部数据","导出剩余数据","下载数据"])
     const delParams = reactive({
         del_id:"",
         delVisible:false,
@@ -189,9 +207,19 @@
     const dataForm = reactive<dataStruct>({
         ID:null,
         name:"",
+        comIdx:null,
         file_url:"",
         ptype:null,
+        remark:"",
         export_num:null
+    })
+    const downParams = reactive({
+        id:"",
+        page:1,
+        limit:10,
+        total:0,
+        task_name:"",
+        showVisible:false
     })
     const dataRules = reactive<FormRules<dataStruct>>({
         name: [
@@ -222,7 +250,6 @@
         dataList.value = list||[];
         dataParams.total = total;
     }
-    console.log(import.meta.env);
     getDatalist();
     const showLeaveNum = async (row:any,page:number)=>{
         residueList.value=[];
@@ -269,6 +296,32 @@
         delParams.del_id = row.ID;
         delParams.delVisible = true;
     }
+    const downloadRecord = async (row:any)=>{
+        recoedLoading.value=true;
+        recordList.value=[];
+        downParams.id=row.ID;
+        downParams.page=1;
+        await getRecordList();
+        downParams.showVisible=true;
+    }
+    const getRecordList = async ()=>{
+        let res:any = await downloadList({pack_id:downParams.id,page:downParams.page,pageSize:downParams.limit})
+        recoedLoading.value=false;
+        if (res.code !=0)return;
+        let { total,list } = res.data;
+        downParams.total=total;
+        recordList.value = list||[];
+    }
+
+    const recordPageSize = (limit:number) => {
+        downParams.page=1;
+        downParams.limit = limit;
+        getRecordList();
+    }
+    const recordLimitSize = (page:number) => {
+        downParams.page = page;
+        getRecordList();
+    }
     const handleDelBtn = async() => {
         let params = {IDs:[]}
         delParams.dialogType==1?params.IDs=checkIdArry.value:params.IDs=[delParams.del_id];
@@ -297,13 +350,23 @@
         await nextTick();
         if (type == 1) {
             dataRef.value?.resetFields()
+            dataForm.name="";
             dataForm.file_url="";
         }
     }
-    const handleCommand = (row:any,command:any) => {
-        dataForm.ID=row?.ID||null;
-        dialogTitle.value=command.label;
-        dialogVisible.value = true;
+    const handleCommand = async (row:any,command:any) => {
+        dataForm.ptype=null;
+        dataForm.remark="";
+        if (command.idx==2) {
+            dataForm.export_num=null;
+            dataForm.ID=row?.ID||null;
+            dialogTitle.value=command.label;
+            dialogVisible.value = true;
+        }else{
+            dataForm.comIdx=command.idx+1;
+            const url = `${VITE_BASE_API}/dp/doOutPutData?pack_id=${row.ID}&ptype=${dataForm.comIdx}`
+            window.location.href = url;
+        }
     }
     const submitForm = async (formEl: FormInstance | undefined) => {
         if (!formEl) return;
@@ -316,12 +379,12 @@
                     isLoading.value=false;
                     if ((res.code ) !=0) return;
                 }else{
-                    const { VITE_BASE_PATH,VITE_SERVER_PORT,VITE_BASE_API} = import.meta.env;
-                    const url = `${VITE_BASE_API}/dp/download?ID=${dataForm.ID}&Num=${dataForm.export_num}`
+                    const url = `${VITE_BASE_API}/dp/download?ID=${dataForm.ID}&Num=${dataForm.export_num}&remark=${dataForm.remark}`
                     window.location.href = url;
                 }
                 getDatalist(1)
                 successTips();
+                isLoading.value=false;
                 dialogVisible.value = false;
             } else {
             console.log('error submit!', fields)

@@ -19,11 +19,17 @@ export const findDataPack = (data) => {
 export const upload = (data) => {
   return service({url: '/fileUploadAndDownload/upload', method: 'post',data})
 }
-
 export const getResidueNum = (params) => {
   return service({url: '/dp/getResidueNum', method: 'get',params})
 }
 export const download = (params) => {
   return service({url: '/dp/download', method: 'get',params})
 }
+export const doOutPutData = (params) => {
+  return service({url: '/dp/doOutPutData', method: 'get',params})
+}
+export const downloadList = (params) => {
+  return service({url: '/dp/downloadList', method: 'get',params})
+}
+
 

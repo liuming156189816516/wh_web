@@ -102,8 +102,8 @@ const router = useRouter()
 const loginForm = ref(null)
 const picPath = ref('')
 const loginFormData = reactive<LoginFrom>({
-  username: 'admin',
-  password: '123456',
+  username: '',
+  password: '',
   captcha: '',
   captchaId: '',
   openCaptcha: false,
