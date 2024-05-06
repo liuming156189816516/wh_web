@@ -14,7 +14,7 @@
                 <div>已选 {{ checkIdArry.length }} 项</div>
             </div>
             <div>
-                <el-table :data="dataList" :summary-method="getSummaries" show-summary ref="dataTable" border :height="tableHeight" v-loading="loading" element-loading-background="rgba(122, 122, 122, .1)" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
+                <el-table :data="dataList" :summary-method="getSummaries" show-summary ref="dataTable" border :cell-style="custom_text" :height="tableHeight" v-loading="loading" element-loading-background="rgba(122, 122, 122, .1)" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
                     <el-table-column type="selection" width="55" />
                     <el-table-column prop="name" label="数据名称" minWidth="140" />
                     <el-table-column prop="invalidNum" label="无效数据" minWidth="100" />
@@ -239,12 +239,15 @@
             { required: true, message: '请输入导出数量', trigger: 'blur' }
         ]
     })
+
     const tableHeight = computed<number>(() => {
         return document.documentElement.clientHeight-240
     })
+
     const handleSelectionChange = (row:any) => {
         checkIdArry.value = row.map(item => item.ID);
     }
+
     const rowSelectChange = (row:any) => {
         let refsElTable = dataTable.value;
         let findRow = checkIdArry.value.find(item => item == row.ID);
@@ -286,6 +289,10 @@
             }
         });
         return sums;
+    }
+    const custom_text = ({row, column, rowIndex, columnIndex }) => {
+        console.log(rowIndex);
+        console.log(columnIndex);
     }
     const showLeaveNum = async (row:any,page:number)=>{
         residueList.value=[];
@@ -499,5 +506,20 @@
     .loading_icon{
         margin-top: 10px;
     }
-
+    ::v-deep .el-table .el-table__footer-wrapper .el-table__footer td{
+        font-size: 15px;
+        font-weight: bolder;
+    }
+    ::v-deep .el-table .el-table__footer-wrapper .el-table__footer td:nth-child(7)  {
+        .cell{
+            color: #f56c6c;
+        }
+    }
+    ::v-deep .el-table .el-table__footer-wrapper .el-table__footer td:nth-child(8)  {
+        .cell{
+            color: #409eff;
+        }
+    }
+</style>
+<style lang="scss">
 </style>
