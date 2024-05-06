@@ -37,6 +37,8 @@ export const doOutDownloadRecord = (params) => {
 export const setDataPackUseStatus = (data) => {
   return service({url: '/dp/setDataPackUseStatus', method: 'put',data})
 }
-
+export const setDataPackEvaluate = (data) => {
+  return service({url: '/dp/setDataPackEvaluate', method: 'put',data})
+}
 
 

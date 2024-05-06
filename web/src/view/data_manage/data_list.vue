@@ -35,7 +35,7 @@
                     </el-table-column>
                     <el-table-column prop="useStatus" label="评价" minWidth="130">
                         <template #default="scope">
-                            <el-rate v-model="scope.row.evaluate" size="large" text-color="#ff9900" :max="scope.row.evaluate" disabled />
+                            <el-rate @click.stop v-model="scope.row.evaluate" size="large" :max="5" @change="setGarde($event,scope.row)" />
                         </template>
                     </el-table-column>
                     <el-table-column label="创建时间" width="160" >
@@ -166,7 +166,7 @@
     import { successTips} from '@/core/global'
     import { formatDate } from '@/utils/format'
     import { FormInstance, FormRules} from 'element-plus'
-    import { getDataList,createDataPack,upload,deleteDataPackByIds,getResidueNum,downloadList,setDataPackUseStatus } from '@/api/data_list'
+    import { getDataList,createDataPack,upload,deleteDataPackByIds,getResidueNum,downloadList,setDataPackUseStatus,setDataPackEvaluate } from '@/api/data_list'
     interface dataStruct {
         ID:number,
         name: string
@@ -401,7 +401,7 @@
                     dataForm.ptype==1? delete dataForm.ID:"";
                     const res:any = await createDataPack(dataForm);
                     isLoading.value=false;
-                    if ((res.code ) !=0) return;
+                    if (res.code !=0) return;
                 }else{
                     const url = `${VITE_BASE_API}/dp/download?ID=${dataForm.ID}&Num=${dataForm.export_num}&remark=${dataForm.remark}`
                     window.location.href = url;
@@ -418,6 +418,12 @@
     const exportRecord = async (row:any) => {
         const url = `${VITE_BASE_API}/dp/doOutDownloadRecord?download_id=${row.ID}`
         window.location.href = url;
+    }
+    const setGarde = async (num:any,row:any) => {
+        const res:any = await setDataPackEvaluate({evaluate:num,pack_id:row.ID});
+        if (res.code !=0) return;
+        getDatalist(1)
+        successTips();
     }
 
 </script>
