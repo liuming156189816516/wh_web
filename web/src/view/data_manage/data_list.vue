@@ -14,7 +14,7 @@
                 <div>已选 {{ checkIdArry.length }} 项</div>
             </div>
             <div>
-                <el-table :data="dataList" :summary-method="getSummaries" show-summary ref="dataTable" border height="680" v-loading="loading" element-loading-background="rgba(122, 122, 122, .1)" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
+                <el-table :data="dataList" :summary-method="getSummaries" show-summary ref="dataTable" border :height="tableHeight" v-loading="loading" element-loading-background="rgba(122, 122, 122, .1)" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
                     <el-table-column type="selection" width="55" />
                     <el-table-column prop="name" label="数据名称" minWidth="140" />
                     <el-table-column prop="invalidNum" label="无效数据" minWidth="100" />
@@ -159,7 +159,7 @@
 </template>
 
 <script lang='ts' setup name='data_list'>
-    import { reactive, ref, nextTick } from 'vue'
+    import { reactive, ref, nextTick,computed  } from 'vue'
     import { successTips} from '@/core/global'
     import { formatDate } from '@/utils/format'
     import { FormInstance, FormRules} from 'element-plus'
@@ -238,6 +238,9 @@
         export_num: [
             { required: true, message: '请输入导出数量', trigger: 'blur' }
         ]
+    })
+    const tableHeight = computed<number>(() => {
+        return document.documentElement.clientHeight-260
     })
     const handleSelectionChange = (row:any) => {
         checkIdArry.value = row.map(item => item.ID);
