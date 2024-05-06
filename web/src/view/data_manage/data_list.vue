@@ -84,9 +84,9 @@
                         </template>
                     </el-table-column>
                 </el-table>
-                    <el-pagination background @size-change="setPageSize" @current-change="switchPage"
-                    :page-sizes="pageOption" :current-page.sync="dataParams.page" :page-size="dataParams.limit"
-                    layout="total, sizes, prev, pager, next, jumper" :total="dataParams.total" style="padding-top: 0;margin-top: 10px;" />
+                <el-pagination background @size-change="setPageSize" @current-change="switchPage"
+                :page-sizes="pageOption" :current-page.sync="dataParams.page" :page-size="dataParams.limit"
+                layout="total, sizes, prev, pager, next, jumper" :total="dataParams.total" style="margin-top: 10px;" />
             </div>
         </div>
         <el-dialog v-model="dialogVisible" :title="dialogTitle" width="400" :close-on-click-modal="false">
