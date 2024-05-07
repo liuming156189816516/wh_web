@@ -41,7 +41,7 @@
                     <el-table-column label="创建时间" width="160" >
                         <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
                     </el-table-column>
-                    <el-table-column label="操作" width="320">
+                    <el-table-column label="操作" width="300">
                         <template #default="scope">
                             <el-popover placement="left" :width="200" trigger="click">
                                 <span>剩余数据明细</span>
@@ -64,7 +64,7 @@
                                     <el-button :disabled="checkIdArry.length>0" type="primary" @click.stop="showLeaveNum(scope.row,1)" size="small" plain>剩余数量</el-button>
                                 </template>
                             </el-popover>
-                            <el-button :disabled="checkIdArry.length > 0" type="success" @click.stop="createDatabtn(scope.row,2)" size="small" plain>补充</el-button>
+                            <!-- <el-button :disabled="checkIdArry.length > 0" type="success" @click.stop="createDatabtn(scope.row,2)" size="small" plain>补充</el-button> -->
                             <el-button :disabled="checkIdArry.length>0" type="primary" @click.stop="downloadRecord(scope.row)" size="small" plain>下载记录</el-button>
                             <!-- <el-button :disabled="checkIdArry.length > 0" type="danger" style="margin-left:10px;" @click.stop="delFileBtn(scope.row, 2)" plain>删除</el-button> -->
                             <el-button :disabled="checkIdArry.length>0" size="small" :border="false" style="padding: 0;" @click.stop>
