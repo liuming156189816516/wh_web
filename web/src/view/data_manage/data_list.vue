@@ -30,7 +30,7 @@
                     </el-table-column>
                     <el-table-column prop="upStatus" label="任务状态" minWidth="100">
                         <template  #default="scope">
-                            <el-tag :type="scope.row.up_status==1?'warning':'success'"> {{ taskOption[scope.row.upStatus] }}</el-tag>
+                            <el-tag :type="scope.row.up_status==1?'warning':scope.row.up_status==2?'success':'danger'"> {{ taskOption[scope.row.upStatus] }}</el-tag>
                         </template>
                     </el-table-column>
                     <el-table-column prop="useStatus" label="评价" minWidth="140">
@@ -192,7 +192,7 @@
     const sunmmary = ref([6,7])
     const dataRef = ref<FormInstance>()
     const { VITE_BASE_API} = import.meta.env;
-    const taskOption = ref(["","上传中...","已完成"])
+    const taskOption = ref(["","上传中...","已完成","上传失败"])
     const dataOption = ref(["","未使用","已使用"])
     const pageOption = ref([10, 20, 50, 100, 200, 500, 1000])
     const moreOption = ref(["导出全部数据","导出剩余数据","下载数据","设置为已使用"])
