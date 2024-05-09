@@ -502,16 +502,16 @@
     .loading_icon{
         margin-top: 10px;
     }
-    ::v-deep .el-table .el-table__footer-wrapper .el-table__footer td{
+    ::v-deep(.el-table .el-table__footer-wrapper .el-table__footer td){
         font-size: 15px;
         font-weight: bolder;
     }
-    ::v-deep .el-table .el-table__footer-wrapper .el-table__footer td:nth-child(7)  {
+    ::v-deep(.el-table .el-table__footer-wrapper .el-table__footer td:nth-child(7)) {
         .cell{
             color: #f56c6c;
         }
     }
-    ::v-deep .el-table .el-table__footer-wrapper .el-table__footer td:nth-child(8)  {
+    ::v-deep(.el-table .el-table__footer-wrapper .el-table__footer td:nth-child(8)) {
         .cell{
             color: #409eff;
         }
