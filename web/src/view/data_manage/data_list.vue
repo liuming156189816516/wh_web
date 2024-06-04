@@ -19,7 +19,7 @@
                     <el-table-column prop="name" label="数据名称" minWidth="140" />
                     <el-table-column prop="invalidNum" label="无效数据" minWidth="100" />
                     <el-table-column prop="upNum" label="上传数据" minWidth="100" />
-                    <el-table-column prop="sourceRepeatNum" label="源重复数据" minWidth="100" />
+                    <!-- <el-table-column prop="sourceRepeatNum" label="源重复数据" minWidth="100" /> -->
                     <el-table-column prop="repeatNum" label="账号内重复" minWidth="100" />
                     <el-table-column prop="intoNum" label="入库数量" minWidth="100" />
                     <el-table-column prop="residueNum" label="剩余数量" minWidth="100" />
@@ -189,7 +189,7 @@
     let tipsContent = ref("")
     const residueList = ref([])
     const checkIdArry = ref([])
-    const sunmmary = ref([6,7])
+    const sunmmary = ref([5,6])
     const dataRef = ref<FormInstance>()
     const { VITE_BASE_API} = import.meta.env;
     const taskOption = ref(["","上传中...","已完成","上传失败"])
