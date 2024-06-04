@@ -15,7 +15,7 @@
             </div>
             <div>
                 <el-table :data="dataList" :summary-method="getSummaries" show-summary ref="dataTable" border :height="tableHeight" v-loading="loading" element-loading-background="rgba(122, 122, 122, .1)" @selection-change="handleSelectionChange" @row-click="rowSelectChange">
-                    <el-table-column type="selection" width="55" />
+                    <el-table-column type="selection" width="120" />
                     <el-table-column prop="name" label="数据名称" minWidth="140" />
                     <el-table-column prop="invalidNum" label="无效数据" minWidth="100" />
                     <el-table-column prop="upNum" label="上传数据" minWidth="100" />
